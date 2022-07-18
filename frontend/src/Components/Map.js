@@ -1,7 +1,20 @@
 import React, { useState } from "react";
-import { GoogleMap, DirectionsRenderer, Geometry } from "@react-google-maps/api";
+import { 
+  GoogleMap, 
+  DirectionsRenderer, 
+  Geometry, 
+  Marker,
+  InfoWindow,
+  MarkerClusterer
+} from "@react-google-maps/api";
 import MapStyles from "./MapStyles";
 import ReactLoading from "react-loading";
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+
+// import { MarkerClusterer } from "@googlemaps/markerclusterer";
+
 
 <script src="https://maps.googleapis.com/maps/api/js?v=3&sensor=false&libraries=geometry"></script>
 
@@ -21,12 +34,51 @@ const Map = ({
   loadError,
   stops,
 }) => {
+  const google = window.google
+
   var markers = [];
+
   const [map, setMap] = useState(null);  
+
+  // Marker InfoWindow
+  const [activeMarker, setActiveMarker] = useState(null);
+  const handleActiveMarker = (marker) => {
+    if (marker === activeMarker) {
+      return;
+    }
+    setActiveMarker(marker);
+  };
+
+  // console.log("STOPS1:", stops)
+
+  // Dictionary for markers
+
+  const stops2 = stops.map(({ stop_id, stop_name, stop_lat, stop_long }) => (
+    { id: stop_id, 
+      name: stop_name, 
+      lat: stop_lat,
+      lng: stop_long,
+      position: {lat: stop_lat, lng: stop_long}}
+  ))
+  // console.log("STOPS1/2:", stops2)
+    
+  for (var key in stops2) {
+    var location = {lat: parseFloat(stops2[key].lat), lng: parseFloat(stops2[key].lng)}
+    stops2[key].position = new google.maps.LatLng(location)
+  }
+  // console.log("STOPS2:", stops2)
+
+  // Marker Clusterer toggle
+  const [clusterer, setClusterer] = useState(true);
+
+  const clusterToggler = () => {
+    clusterer ? setClusterer(false): setClusterer(true);
+  }
+  
+
   const mapRef = React.useRef();
   // const onMapLoad = React.useCallback((map) => {
   mapRef.current = map;
-  const google = window.google
   // Error loading Map
   if (loadError) {
     return <div>Map cannot be loaded right now, sorry.</div>;
@@ -46,6 +98,11 @@ const Map = ({
     );
   }
 
+  // Map Bounds
+  // const bounds = new google.maps.LatLngBounds();
+  // stops2.forEach(({ position }) => bounds.extend(position));
+  // map.fitBounds(bounds);
+
   // Function to select route index
   const selectRouteIndex = () => {
     // Choose 0 unless another index specified
@@ -55,12 +112,10 @@ const Map = ({
     return 0;
   };
 const panTo = (lat, lng) => {
-    console.log("lat,lng")
     // find_closest_marker(lat,lng)
      
     lat = 53.339665308
     lng = -6.23749905
-    console.log('here 2',lat,lng);
     mapRef.current.panTo({ lat, lng });
     mapRef.current.setZoom(14);
     var circle = new google.maps.Circle({
@@ -109,7 +164,7 @@ const panTo = (lat, lng) => {
         center: point,
         radius: searchAreaRadius
       });
-      console.log(markers)
+      // console.log(markers)
       for (var i = 0; i < stops.length; i++) {
         // console.log('Marker: , position: ' + stops[i].getPosition());
         // console.log("marker["+i+"] posn="+stops[i].markers.getPosition().toUrlValue(6));
@@ -146,10 +201,6 @@ const panTo = (lat, lng) => {
 
           }
 
-
-
-
-
           // console.log(distance);  // popup box says "[object, Object]"
           c++;
       }
@@ -161,61 +212,35 @@ const panTo = (lat, lng) => {
         //   console.log('Not in')
         // }
 
-
-
-
-
-
-
-
   };
 }
+  
+  /* ************* VERSION 1 - START **************** */
   var state = true;
-  
-  
+
   function setMapOnAll() {
     for (let i = 0; i < markers.length; i++) {
       markers[i].setMap(null);
     }
+
   }
   const PanTo1 = () => {
-
-   
-
-    
-    console.log('ELSE')
+    //// Unset all markers
       // stuff for 'stop' action
       if (state == false) {
         // stuff for 'playnow' action
-        setMapOnAll()
+        setMapOnAll();
+        var myBoolean = true;
         state = true;
         return;
     }
 
     else {
-        // stuff for 'stop' action
-
-        
-      
-
-
-
-
-
 
     var stops1 = stops
     
-    console.log('here 2',stops);
-    // const [map, setMap] = useState(null);
     const google = window.google
-    // Code for referencing the map
-    // const mapRef = React.useRef();
-    // // const onMapLoad = React.useCallback((map) => {
-    // mapRef.current = map;
-    // mapRef.current.panTo({ lat, lng });
-    // mapRef.current.setZoom(14);
-    // console.log(stops)
-    
+
     for (var key in stops1) {
       if (stops1.hasOwnProperty(key)) {
         
@@ -223,8 +248,7 @@ const panTo = (lat, lng) => {
         var lat = stops1[key].stop_lat;
         var log = stops1[key].stop_long;
         var displayInfo = "<h3>" + stops1[key].stop_name + "</br>" + "</h3>Bikes Available : ";
-        
-
+       
         // Generate infoWindow
         
         // console.log(lat)
@@ -237,55 +261,27 @@ const panTo = (lat, lng) => {
         position: location_place,
         map: map,
           });
-          // Ruzzel code, here
 
-
-          
-
-      // makeClickable(map, marker, displayInfo);
       markers.push(marker);
       
           var html = stop;
-      
       google.maps.event.addListener(marker, 'click', function() {
         infoWindow.setContent(html);
         map.panTo(this.getPosition());
         
       })
       }
-      state = false;
-        return;
-    }   
+
+    var markerCluster = new MarkerClusterer({ markers, map });
+
+    state = false;
+      return;
     }
 
-    // function makeClickable(map, markers, info) {
-    //   console.log('In the make clickable')
-    //     var infowindow = new google.maps.InfoWindow({
-    //         content: info
-    //     });
-    
-    //     google.maps.event.addListener(marker, 'click', function (ev) {
-    //         infowindow.setPosition();
-    //         infowindow.open(map);
-    //     });
-    // }
-    
+    }
 
+  /* ************* VERSION 1 - END **************** */
 
-
-
-
-
-
-
-
-
-
-  // Function to pan the map down below route info
-  // const panDown = (map, directions) => {
-  //   map.panTo(directions);
-  //   map.panBy(0, 20);
-  // };
 
   return (
     <div id='GoogleMap'>
@@ -293,6 +289,12 @@ const panTo = (lat, lng) => {
     <div>
     <button onClick={PanTo1} className='search'>Show stop locations</button>
     </div>
+
+    <div>
+    </div>
+    
+
+
     <GoogleMap
       
       center={center}
@@ -307,6 +309,29 @@ const panTo = (lat, lng) => {
         setModalType("CLOSED");
       }}
     >
+      {clusterer && (
+        <MarkerClusterer>
+        {(clusterer) =>
+          stops2.map(({ id, name, position }) => (
+            <Marker
+              key={id}
+              position={position}
+              onClick={() => handleActiveMarker(id)}
+              clusterer= {clusterer}
+            >
+              {activeMarker === id ? (
+                <InfoWindow onCloseClick={() => setActiveMarker(null)}>
+                  <div>{name}</div>
+                </InfoWindow>
+              ) : null}
+            </Marker>
+            
+          ))}
+        
+      </MarkerClusterer>
+      )}
+
+
       {directionsOutput && (
         <DirectionsRenderer
           options={{
@@ -318,6 +343,8 @@ const panTo = (lat, lng) => {
           routeIndex={selectRouteIndex()}
         />
       )}
+
+
     </GoogleMap>
     </div>
   );
@@ -333,7 +360,6 @@ function Locate({ panTo }) {
         navigator.geolocation.getCurrentPosition(
           
           (position) => {
-            console.log(position.coords.latitude)
             var lat = position.coords.latitude;
             var lng =  position.coords.longitude
             panTo(lat,lng);
