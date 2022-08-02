@@ -2,6 +2,7 @@ import React from "react";
 import "./Navbar.css";
 import dublin_bus_logo from "../Assets/dublin_bus_logo.png";
 
+
 const Navbar = ({ modalType, setModalType }) => {
   return (
     <div>
@@ -52,7 +53,9 @@ const Navbar = ({ modalType, setModalType }) => {
           className="text-left text-base font-light	tracking-wider webbutton bg-zinc-900 hover:bg-amber-800 text-slate-100 font-medium py-3 px-7"
         >
           Routes
+          
         </button>
+
       </div>
 
       {/* Phone buttons */}

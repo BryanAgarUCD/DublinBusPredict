@@ -5,6 +5,7 @@
     "@googlemaps/markerclusterer": "^2.0.8",
     "@mui/material": "^5.9.0",
     "antd": "^4.21.6",
-    "create-react-app": "^5.0.1"
+    "create-react-app": "^5.0.1",
+    "react-switch": "^7.0.0"
   }
 }
