@@ -12,8 +12,6 @@ import Switch from "react-switch";
 import location_icon from "../Assets/locationIcon.gif";
 import WeatherIcon from "./weatherIcon";
 
-
-
 <script src="https://maps.googleapis.com/maps/api/js?v=3&sensor=false&libraries=geometry"></script>
 
 
@@ -94,6 +92,17 @@ const Map = ({
     }
     return 0;
   };
+
+        // if (google.maps.geometry.spherical.computeDistanceBetween(markers[i].getPosition(), point) <= searchAreaRadius) {
+        //   console.log('=> is in searchArea');
+        // }
+        // else{
+        //   console.log('Not in')
+        // }
+
+
+
+
 
 
 
@@ -308,6 +317,4 @@ const Map = ({
     </div>
   );
 };
-
-
 export default Map;

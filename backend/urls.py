@@ -15,23 +15,30 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from dublinbusapp.models import FavoriteStops
 from rest_framework import routers
 from dublinbusapp import views
-
+from rest_framework_jwt.views import obtain_jwt_token
 router = routers.DefaultRouter()
 router.register(r'stops', views.StopsView, 'stops')
+router.register(r'todos', views.TodoView, 'todo')
 router.register(r'trips', views.TripsView, 'trips')
 router.register(r'routes', views.RoutesView, 'routes')
 router.register(r'shapes', views.ShapesView, 'shapes')
 router.register(r'namesandheadsigns', views.NamesAndHeadsignsView, 'namesandheadsigns')
 
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    path('api/prediction/<str:line_id>/<int:journey_distance>/', views.predict)
-    path('api/<str:shape_id>/', views.ShapeDetails.as_view()),
-
+    path("accounts/", include("django.contrib.auth.urls")),
+    path('token-auth/', obtain_jwt_token),
+    path('core/', include('dublinbusapp.urls')), # new
+    path('fav_stops/<str:user_id>/',views.FavoriteStopsView.as_view()),
+    path('api/prediction/<str:line_id>/<int:journey_distance>/', views.predict),
+    path('api/<str:shape_id>/', views.ShapeDetails.as_view())
 ]
 
 # extract information from following:

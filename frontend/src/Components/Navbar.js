@@ -1,8 +1,18 @@
 import React from "react";
 import "./Navbar.css";
 import dublin_bus_logo from "../Assets/dublin_bus_logo.png";
+import { BrowserRouter, Route, Link, useNavigate } from "react-router-dom";
+import PropTypes from 'prop-types';
+import WeatherCard from "./Weather";
 
-const Navbar = ({ modalType, setModalType }) => {
+const Navbar = ({ modalType, setModalType },props) => {
+  // function HomeButton() {
+  let navigate = useNavigate();
+
+  function handleClick() {
+    navigate("/signin");
+  }
+  
   return (
     <div>
       <div className="header text-white pt-4 pl-7">
@@ -53,6 +63,7 @@ const Navbar = ({ modalType, setModalType }) => {
         >
           Route Information
         </button>
+        
       </div>
 
       {/* Phone buttons */}
@@ -89,13 +100,24 @@ const Navbar = ({ modalType, setModalType }) => {
         >
           Route Information
         </button>
-        <button className="bg-zinc-900 text-md font-light hover:bg-amber-800 text-slate-100 font-medium py-2 px-6 rounded-r-2xl">
+        {/* <h3 class="text-4xl font-normal leading-normal mt-0 mb-2 text-pink-800">
+          {this.state.logged_in
+            ? `Hello, ${this.state.username}`
+            : 'Please Log In'}
+        </h3> */}
+        <button className="bg-zinc-900 text-md font-light hover:bg-amber-800 text-slate-100 font-medium py-2 px-6 rounded-r-2xl" onClick={handleClick}>
           Sign In
         </button>
+        
       </div>
-      <button className="webbutton font-light	tracking-wider text-left text-base webbutton-bottom bg-zinc-900 hover:bg-amber-800 text-slate-100 font-medium py-4 px-7 mb-4">
+      <button className="webbutton font-light	tracking-wider text-left text-base webbutton-bottom bg-zinc-900 hover:bg-amber-800 text-slate-100 font-medium py-4 px-7 mb-4" onClick={handleClick}>
         Sign In
       </button>
+      {/* <h3>
+      {this.state.logged_in
+            ? `Hello, ${this.state.username}`
+            : '' }
+      </h3> */}
     </div>
   );
 };
