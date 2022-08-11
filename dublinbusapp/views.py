@@ -69,6 +69,53 @@ class TodoView(viewsets.ModelViewSet):
 
     serializer_class = TodoSerializer
     queryset = Todo.objects.all()
+
+def rf_predict(request, line_id, journey_distance, temp, month, day, dep_time):
+    # line_id: the short name of the bus route
+    # distance: distance of the bus journey in metres
+    # temperature: current temperature in Kelvin
+    # month: current month, integer from 1-12 (jan-dec)
+    # day: day of the week from 0-6 (mon-sun)
+    # dep_time: closest half hour index to departure time from 0 to 47 (midnight to 11:30pm)
+   
+
+    try:
+        # # # STEP ONE: GETTING INITIAL PREDICTION FOR THE COMPLETE JOURNEY FROM START OF LINE TO END OF LINE # # #
+        # Load the relevant random forest model
+        line_id = str(line_id)
+        line_id = line_id.upper()
+        module_dir = os.path.dirname(__file__)  # get current directory
+        file_name = line_id + ".pkl"
+        dir_path = os.path.join(module_dir, "forests")
+        file_path = os.path.join(dir_path, file_name)
+        with open(file_path, 'rb') as forest_file:
+            forest = pickle.load(forest_file)
+
+        # Arranging the input data for feeding into the random forest model
+        ### NOTE: if temp comes in Kelvin, convert to celsius
+        temp = temp -273
+        input_data = [[temp, month, day, dep_time]]
+        # Getting the predicted total journey time for the given input data
+        total_time = forest.predict(input_data)
+        total_time = int(total_time[0])
+
+        # # # STEP TWO: CALCULATING THE PARTIAL JOURNEY TIME BASED ON ORIGIN & DESTINATION STOPS # # #
+        # Loading the proportional dictionary
+        distance_file = os.path.join(dir_path,"line_distances.pkl")
+        with open(distance_file, 'rb') as fin:
+            dist_proportions = pickle.load(fin)
+        # getting the total distance for a route
+        line_distance = dist_proportions[line_id]
+        # calculating the proportional journey time
+        journey_proportion = journey_distance / line_distance
+        journey_time = int(journey_proportion * total_time)
+
+        return JsonResponse({'journey_time': journey_time})
+    except:
+        # Status 500: "Internal Server Error" (i.e. Server encountered something making it unable to fulfill request)
+        # possible exceptions: line id doesn't have relevant random forest model
+        return HttpResponse(status=500)
+
 def predict(request, line_id, journey_distance):
     
     # line_id: the short name of the bus route (e.g. "46A")

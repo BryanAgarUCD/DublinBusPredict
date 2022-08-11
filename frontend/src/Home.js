@@ -112,6 +112,21 @@ const Home = () => {
     }
   }
 
+  // Function to get predicted journey time for bus leg using complete inputs
+  async function getFullPrediction(id, dist, temp, month, weekday, depTime) {
+    // Either returns a predicted value or a null result on failure
+    let base = "http://localhost:8000/api/prediction/";
+    let api_url = base + id + "/" + dist + "/" + temp + "/" + month + "/" + weekday + "/" + depTime;
+    const response = await fetch(api_url);
+    if (response.ok) {
+      const data = await response.json();
+      const prediction = await data.journey_time;
+      return prediction;
+    } else {
+      return null;
+    }
+  }  
+
   // Function to convert duration (in seconds) to human readable text
   const secondsToText = (sec) => {
     let hr = Math.floor(sec / 3600);
@@ -131,6 +146,17 @@ const Home = () => {
   const prepareRouteOptions = async (option) => {
     setResultsReady(false);
     let options;
+    const month = timeValue.getMonth() + 1; // month used for predictions
+    const weekday = timeValue.getDay(); // day of week used for predictions
+    let depTime = timeValue.getHours(); // getting the hours
+    depTime = parseInt((depTime)*2); // turning into half hour index
+    let depMin = timeValue.getMinutes(); // getting minutes to adjust half hour index
+    if (depMin >= 15 & depMin < 45) {
+      depTime = depTime +1;
+    } else if (depMin >= 45) {
+      depTime = depTime +2;
+    };
+    let temp = 289; // dummy value for now
     options = option.map(async (route, index) => {
       // Arrays for instructions and bus numbers
       let instructionsArray = [];
@@ -159,7 +185,8 @@ const Home = () => {
           }
 
           // Getting prediction for step
-          let predictedStepDuration = await getPrediction(lineID, stepDistance);
+          // let predictedStepDuration = await getPrediction(lineID, stepDistance); // prediction lite
+          let predictedStepDuration = await getFullPrediction(lineID, stepDistance, temp, month, weekday, depTime);
           if (predictedStepDuration != null) {
             // if value is returned, use value
             predictedStepDurations += predictedStepDuration;
@@ -180,7 +207,7 @@ const Home = () => {
         predictedJourneyTime += promiseFixer[i];
       }
       let waitTime = route.legs[0].duration.value - originalStepDurations; // janky solution, could be improved
-      // let predictedJourneyTime = predictedStepDurations + waitTime;
+      predictedJourneyTime = predictedStepDurations + waitTime;
       let durationText = secondsToText(predictedJourneyTime);
       console.log("predicted: " + durationText);
       console.log("original: " + route.legs[0].duration.text);

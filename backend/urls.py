@@ -38,6 +38,7 @@ urlpatterns = [
     path('core/', include('dublinbusapp.urls')), # new
     path('fav_stops/<str:user_id>/',views.FavoriteStopsView.as_view()),
     path('api/prediction/<str:line_id>/<int:journey_distance>/', views.predict),
+    path('api/prediction/<str:line_id>/<int:journey_distance>/<int:temp>/<int:month>/<int:day>/<int:dep_time>', views.rf_predict), # full inputs api
     path('api/<str:shape_id>/', views.ShapeDetails.as_view())
 ]
 
